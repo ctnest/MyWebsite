@@ -1,0 +1,400 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="robots" content="noindex,nofollow">
+  <meta name="theme-color" content="#0b2f4a">
+  <title>CT Nest | Admin</title>
+  <link rel="icon" type="image/png" sizes="32x32" href="favicon-32.png">
+  <link rel="icon" type="image/png" sizes="512x512" href="favicon.png">
+  <link rel="apple-touch-icon" href="apple-touch-icon.png">
+  <style>
+    :root{--green:#12776d;--green2:#0b5f57;--navy:#0b2f4a;--ink:#14242e;--muted:#66767f;--cream:#f4f8f9;--line:#e3eaee;--red:#c0392b;--amber:#b7791f;--shadow:0 12px 35px rgba(10,48,74,.10)}
+    *{box-sizing:border-box}
+    body{margin:0;font-family:Inter,system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;color:var(--ink);background:var(--cream)}
+    button,input{font:inherit}button{cursor:pointer}button:disabled{opacity:.55;cursor:not-allowed}
+    .wrap{width:min(1100px,92%);margin:auto}.top{background:#fff;border-bottom:1px solid var(--line);position:sticky;top:0;z-index:10}
+    .topin{display:flex;align-items:center;justify-content:space-between;gap:12px;min-height:66px}
+    .brand{display:flex;align-items:center;gap:12px;font-weight:800}.brand img{height:48px;width:auto;display:block;object-fit:contain}
+    .badge{background:var(--navy);color:#fff;border-radius:8px;padding:4px 9px;font-size:11px;letter-spacing:1px;text-transform:uppercase}
+    .btn{border:0;border-radius:10px;padding:10px 16px;background:var(--green);color:#fff;font-weight:750}.btn:hover{background:var(--green2)}
+    .btn.ghost{background:#fff;color:var(--ink);border:1px solid var(--line)}.btn.ghost:hover{background:var(--cream)}
+    .btn.danger{background:var(--red)}.btn.danger:hover{background:#992d22}
+    .card{background:#fff;border:1px solid var(--line);border-radius:16px;padding:20px;box-shadow:var(--shadow)}
+    .login{max-width:420px;margin:60px auto}.login h1{margin:0 0 6px;font-size:24px}.login p{margin:0 0 18px;color:var(--muted);font-size:14px;line-height:1.5}
+    .field{margin-bottom:13px}.field label{display:block;font-size:12px;font-weight:800;margin-bottom:6px}.field input{width:100%;border:1px solid #dce5e9;border-radius:10px;padding:12px;outline-color:var(--green)}
+    .msg{font-size:13px;margin-top:12px;color:var(--red);min-height:18px;line-height:1.5}.hint{font-size:12px;color:var(--muted);margin-top:10px}
+    .dashboard-head{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;margin-top:22px}.dashboard-head h1{font-size:22px;margin:0}
+    .tabs{display:flex;gap:8px;flex-wrap:wrap;margin:18px 0 16px}.tab{border:1px solid var(--line);background:#fff;color:#536158;border-radius:30px;padding:9px 16px;font-size:13px;font-weight:700}.tab.active{background:var(--green);color:#fff;border-color:var(--green)}
+    .list{display:grid;gap:16px;padding-bottom:50px}.item{display:grid;grid-template-columns:260px minmax(0,1fr);gap:18px;background:#fff;border:1px solid var(--line);border-radius:16px;padding:16px;min-width:0}
+    .photos .main{width:100%;height:190px;object-fit:cover;border-radius:12px;background:#e8eee9;display:block}.thumbs{display:flex;gap:6px;margin-top:8px;overflow:auto}.thumbs img{width:52px;height:44px;object-fit:cover;border-radius:6px;cursor:pointer;border:2px solid transparent;flex:none}.thumbs img.on{border-color:var(--green)}
+    .nophoto{height:190px;border-radius:12px;background:#e8eee9;display:grid;place-items:center;color:var(--muted);font-size:13px}.info{min-width:0}.info h3{margin:0 0 6px;font-size:18px;overflow-wrap:anywhere}
+    .chips{display:flex;gap:6px;flex-wrap:wrap;margin:8px 0}.chip{background:var(--cream);border:1px solid var(--line);border-radius:20px;padding:4px 10px;font-size:12px;font-weight:650;color:#3d4d57}
+    .price{font-weight:900;color:var(--green);font-size:18px}.desc{font-size:13px;line-height:1.6;color:#44545e;margin:8px 0;white-space:pre-wrap;overflow-wrap:anywhere}
+    .meta{font-size:12px;color:var(--muted);line-height:1.8;overflow-wrap:anywhere}.meta a{color:var(--green);font-weight:700}.actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px}
+    .empty{text-align:center;color:var(--muted);padding:50px 10px;background:#fff;border:1px solid var(--line);border-radius:16px}.toast{position:fixed;bottom:22px;left:50%;transform:translateX(-50%);background:var(--navy);color:#fff;padding:12px 18px;border-radius:10px;font-size:13px;display:none;z-index:50;max-width:92%;text-align:center;box-shadow:var(--shadow)}.toast.show{display:block}
+    .hide{display:none!important}.status-note{font-size:12px;color:var(--muted);margin:0 0 12px}
+    @media(max-width:700px){.item{grid-template-columns:1fr}.photos .main,.nophoto{height:220px}.brand img{height:42px}.topin{min-height:60px}.login{margin:35px auto}.card{padding:17px}}
+  </style>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+</head>
+<body>
+<header class="top"><div class="wrap topin">
+  <div class="brand"><img src="ctnest-logo-trimmed.jpg" alt="CT Nest" width="556" height="629"><span class="badge">Admin</span></div>
+  <button class="btn ghost hide" id="logoutBtn" type="button">Logout</button>
+</div></header>
+<main class="wrap">
+  <section class="card login" id="loginView">
+    <h1>Admin login</h1><p>Sign in with the authorised CT Nest admin account to review property listings.</p>
+    <form id="loginForm">
+      <div class="field"><label for="email">Email</label><input type="email" id="email" required autocomplete="username"></div>
+      <div class="field"><label for="password">Password</label><input type="password" id="password" required autocomplete="current-password"></div>
+      <button class="btn" type="submit" id="loginBtn" style="width:100%;margin-top:6px">Login</button>
+      <div class="msg" id="loginMsg" role="alert" aria-live="polite"></div>
+    </form>
+    <div class="hint">Only accounts listed in the Supabase <strong>admins</strong> table can access this dashboard.</div>
+  </section>
+  <section class="card login hide" id="deniedView">
+    <h1>Not authorised</h1><p id="deniedText">This account is not authorised to access the admin dashboard.</p>
+    <button class="btn" id="deniedLogoutBtn" type="button" style="width:100%">Logout</button>
+  </section>
+  <section class="hide" id="dashView">
+    <div class="dashboard-head"><h1>Property management</h1><button class="btn ghost" id="refreshBtn" type="button">↻ Refresh listings</button></div>
+    <p class="status-note">Review submitted properties and choose whether they should be public.</p>
+    <div class="tabs" id="tabs"></div><div class="list" id="list" aria-live="polite"></div>
+  </section>
+</main>
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+<script>
+'use strict';
+
+// These are the same public Supabase project details used by the CT Nest website.
+// Keep database protection in Supabase RLS policies; never put a service-role key here.
+const SUPABASE_URL = 'https://hshkkiujxfnhpkhdxbuw.supabase.co';
+const SUPABASE_KEY = 'sb_publishable_UjNy4Jw4zay2FIJG7cR7hQ_dR47uK5r';
+
+const TABS = [
+  { key: 'pending', label: 'Pending' },
+  { key: 'approved', label: 'Approved' },
+  { key: 'rejected', label: 'Rejected' }
+];
+
+let sb = null;
+let allProperties = [];
+let activeTab = 'pending';
+let isStarting = false;
+let toastTimer = null;
+const photoCache = new Map();
+const busyPropertyIds = new Set();
+const $ = id => document.getElementById(id);
+
+function escapeHTML(value) {
+  return String(value ?? '').replace(/[&<>"']/g, char => ({
+    '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'
+  })[char]);
+}
+
+function show(view) {
+  ['loginView', 'deniedView', 'dashView'].forEach(id => $(id).classList.toggle('hide', id !== view));
+  $('logoutBtn').classList.toggle('hide', view === 'loginView');
+}
+
+function notify(message) {
+  const node = $('toast');
+  node.textContent = message;
+  node.classList.add('show');
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => node.classList.remove('show'), 3500);
+}
+
+function setLoginMessage(message) {
+  $('loginMsg').textContent = message || '';
+}
+
+function getStatus(property) {
+  return TABS.some(item => item.key === property.status) ? property.status : 'pending';
+}
+
+function formatPrice(value) {
+  const number = Number(value);
+  return Number.isFinite(number) ? number.toLocaleString('en-IN') : escapeHTML(value || '0');
+}
+
+function formatDate(value) {
+  if (!value) return 'Not available';
+  const date = new Date(value);
+  return Number.isNaN(date.getTime()) ? 'Not available' : date.toLocaleString();
+}
+
+async function login(event) {
+  event.preventDefault();
+  if (!sb) return setLoginMessage('Supabase could not load. Check your internet connection and reload this page.');
+  const button = $('loginBtn');
+  button.disabled = true;
+  button.textContent = 'Signing in…';
+  setLoginMessage('');
+  try {
+    const { error } = await sb.auth.signInWithPassword({
+      email: $('email').value.trim(),
+      password: $('password').value
+    });
+    if (error) throw error;
+    await startDashboard();
+  } catch (error) {
+    setLoginMessage(error?.message || 'Login failed. Please try again.');
+  } finally {
+    button.disabled = false;
+    button.textContent = 'Login';
+  }
+}
+
+async function logout() {
+  if (!sb) return show('loginView');
+  try {
+    const { error } = await sb.auth.signOut();
+    if (error) throw error;
+    allProperties = [];
+    photoCache.clear();
+    setLoginMessage('');
+    show('loginView');
+  } catch (error) {
+    notify(error?.message || 'Could not log out. Please try again.');
+  }
+}
+
+async function startDashboard() {
+  if (isStarting || !sb) return;
+  isStarting = true;
+  try {
+    const { data: { user }, error: userError } = await sb.auth.getUser();
+    if (userError) throw userError;
+    if (!user) {
+      show('loginView');
+      return;
+    }
+
+    // The admins table must have a SELECT policy allowing an authenticated admin
+    // to read their own row. RLS on properties must independently protect updates.
+    const { data: adminRow, error: adminError } = await sb
+      .from('admins').select('user_id').eq('user_id', user.id).maybeSingle();
+
+    if (adminError || !adminRow) {
+      $('deniedText').textContent = adminError
+        ? 'Could not verify admin access: ' + adminError.message
+        : 'Signed in as ' + (user.email || 'this account') + ', but this account is not listed as an admin.';
+      show('deniedView');
+      return;
+    }
+
+    show('dashView');
+    await loadProperties();
+  } catch (error) {
+    show('loginView');
+    setLoginMessage(error?.message || 'Could not verify your login. Please try again.');
+  } finally {
+    isStarting = false;
+  }
+}
+
+async function loadProperties() {
+  $('list').innerHTML = '<div class="empty">Loading property listings…</div>';
+  $('refreshBtn').disabled = true;
+  try {
+    const { data, error } = await sb
+      .from('properties').select('*').order('created_at', { ascending: false });
+    if (error) throw error;
+    allProperties = Array.isArray(data) ? data : [];
+    photoCache.clear();
+    renderDashboard();
+  } catch (error) {
+    $('list').innerHTML = '<div class="empty">Could not load listings: ' + escapeHTML(error?.message || 'Unknown error') + '</div>';
+  } finally {
+    $('refreshBtn').disabled = false;
+  }
+}
+
+async function getPhotoUrls(property) {
+  if (photoCache.has(String(property.id))) return photoCache.get(String(property.id));
+  const paths = Array.isArray(property.photo_urls) ? property.photo_urls : [];
+  const urls = await Promise.all(paths.map(async path => {
+    if (typeof path !== 'string' || !path.trim()) return null;
+    // photo_urls are expected to contain paths in the property-photos bucket.
+    const { data, error } = await sb.storage.from('property-photos').createSignedUrl(path, 3600);
+    return error || !data?.signedUrl ? null : data.signedUrl;
+  }));
+  const validUrls = urls.filter(Boolean);
+  photoCache.set(String(property.id), validUrls);
+  return validUrls;
+}
+
+function propertyButtons(property) {
+  const status = getStatus(property);
+  const id = escapeHTML(property.id);
+  if (status === 'pending') {
+    return `<button class="btn" type="button" data-action="approve" data-id="${id}">✓ Approve</button>
+            <button class="btn danger" type="button" data-action="reject" data-id="${id}">✕ Reject</button>`;
+  }
+  if (status === 'approved') {
+    return `<button class="btn ghost" type="button" data-action="pending" data-id="${id}">Move back to pending</button>
+            <button class="btn danger" type="button" data-action="reject" data-id="${id}">✕ Reject</button>`;
+  }
+  return `<button class="btn" type="button" data-action="approve" data-id="${id}">✓ Approve</button>
+          <button class="btn ghost" type="button" data-action="pending" data-id="${id}">Move back to pending</button>`;
+}
+
+function renderDashboard() {
+  $('tabs').innerHTML = TABS.map(item => {
+    const count = allProperties.filter(property => getStatus(property) === item.key).length;
+    return `<button class="tab ${activeTab === item.key ? 'active' : ''}" type="button" data-tab="${item.key}">${item.label} (${count})</button>`;
+  }).join('');
+
+  const rows = allProperties.filter(property => getStatus(property) === activeTab);
+  if (!rows.length) {
+    $('list').innerHTML = `<div class="empty">No ${escapeHTML(activeTab)} properties right now.</div>`;
+    return;
+  }
+
+  $('list').innerHTML = rows.map(property => {
+    const id = escapeHTML(property.id);
+    const phone = String(property.whatsapp_number || '').replace(/\D/g, '');
+    const facilities = Array.isArray(property.facilities)
+      ? property.facilities.map(item => `<span class="chip">${escapeHTML(item)}</span>`).join('') : '';
+    const rentSuffix = String(property.purpose || '').toLowerCase() === 'rent' ? ' / month' : '';
+    return `<article class="item" data-property-card="${id}">
+      <div class="photos" data-photos-for="${id}"><div class="nophoto">Loading photos…</div></div>
+      <div class="info">
+        <h3>${escapeHTML(property.title || 'Untitled property')}</h3>
+        <div class="price">Rs. ${formatPrice(property.price)}${rentSuffix}</div>
+        <div class="chips">
+          ${property.property_type ? `<span class="chip">${escapeHTML(property.property_type)}</span>` : ''}
+          ${property.purpose ? `<span class="chip">For ${escapeHTML(property.purpose)}</span>` : ''}
+          ${property.location ? `<span class="chip">⌖ ${escapeHTML(property.location)}</span>` : ''}
+          ${property.bedrooms !== null && property.bedrooms !== undefined ? `<span class="chip">${escapeHTML(property.bedrooms)} bed</span>` : ''}
+          ${property.bathrooms !== null && property.bathrooms !== undefined ? `<span class="chip">${escapeHTML(property.bathrooms)} bath</span>` : ''}
+        </div>
+        ${property.address ? `<div class="meta">Address: ${escapeHTML(property.address)}</div>` : ''}
+        ${property.description ? `<div class="desc">${escapeHTML(property.description)}</div>` : ''}
+        ${facilities ? `<div class="chips">${facilities}</div>` : ''}
+        <div class="meta">WhatsApp: ${phone ? `<a href="https://wa.me/${escapeHTML(phone)}" target="_blank" rel="noopener noreferrer">${escapeHTML(property.whatsapp_number)}</a>` : 'Not provided'}<br>Submitted: ${escapeHTML(formatDate(property.created_at))}</div>
+        <div class="actions">${propertyButtons(property)}</div>
+      </div>
+    </article>`;
+  }).join('');
+
+  rows.forEach(loadPhotosForCard);
+}
+
+async function loadPhotosForCard(property) {
+  const card = document.querySelector(`[data-photos-for="${CSS.escape(String(property.id))}"]`);
+  if (!card) return;
+  try {
+    const urls = await getPhotoUrls(property);
+    if (!card.isConnected) return;
+    if (!urls.length) {
+      card.innerHTML = '<div class="nophoto">No photos available</div>';
+      return;
+    }
+    const safeFirst = escapeHTML(urls[0]);
+    card.innerHTML = `<a class="main-link" href="${safeFirst}" target="_blank" rel="noopener noreferrer"><img class="main" src="${safeFirst}" alt="Property photo" loading="lazy"></a>
+      <div class="thumbs">${urls.map((url, index) => `<img src="${escapeHTML(url)}" class="${index === 0 ? 'on' : ''}" data-photo-index="${index}" alt="Property photo ${index + 1}" loading="lazy">`).join('')}</div>`;
+    card.querySelectorAll('.thumbs img').forEach(image => image.addEventListener('click', () => {
+      const main = card.querySelector('.main');
+      const link = card.querySelector('.main-link');
+      main.src = image.src;
+      link.href = image.src;
+      card.querySelectorAll('.thumbs img').forEach(item => item.classList.remove('on'));
+      image.classList.add('on');
+    }));
+  } catch (error) {
+    if (card.isConnected) card.innerHTML = '<div class="nophoto">Could not load photos</div>';
+    console.error('Photo loading failed:', error);
+  }
+}
+
+async function changePropertyStatus(id, status, button) {
+  const property = allProperties.find(item => String(item.id) === String(id));
+  if (!property || busyPropertyIds.has(String(id))) return;
+  if (status === 'rejected' && !window.confirm(`Reject “${property.title || 'this property'}”?`)) return;
+
+  busyPropertyIds.add(String(id));
+  const originalText = button.textContent;
+  button.disabled = true;
+  button.textContent = 'Saving…';
+  try {
+    const { data, error } = await sb.from('properties')
+      .update({ status })
+      .eq('id', property.id)
+      .select('id,status');
+    if (error) throw error;
+    if (!Array.isArray(data) || data.length === 0) {
+      throw new Error('No row was updated. Check the properties UPDATE policy for admins in Supabase.');
+    }
+    property.status = status;
+    notify(status === 'approved' ? 'Property approved and made public.' : status === 'rejected' ? 'Property rejected.' : 'Property moved to pending.');
+    renderDashboard();
+  } catch (error) {
+    console.error('Status update failed:', error);
+    notify(error?.message || 'Could not update this property.');
+    button.disabled = false;
+    button.textContent = originalText;
+  } finally {
+    busyPropertyIds.delete(String(id));
+  }
+}
+
+// Event delegation keeps property IDs out of inline JavaScript handlers.
+$('loginForm').addEventListener('submit', login);
+$('logoutBtn').addEventListener('click', logout);
+$('deniedLogoutBtn').addEventListener('click', logout);
+$('refreshBtn').addEventListener('click', loadProperties);
+$('tabs').addEventListener('click', event => {
+  const button = event.target.closest('[data-tab]');
+  if (!button) return;
+  activeTab = button.dataset.tab;
+  renderDashboard();
+});
+$('list').addEventListener('click', event => {
+  const button = event.target.closest('[data-action][data-id]');
+  if (!button) return;
+  const nextStatus = button.dataset.action === 'approve' ? 'approved'
+    : button.dataset.action === 'reject' ? 'rejected' : 'pending';
+  changePropertyStatus(button.dataset.id, nextStatus, button);
+});
+
+async function initialise() {
+  if (!window.supabase?.createClient) {
+    setLoginMessage('Supabase library did not load. Check your internet connection and reload.');
+    return;
+  }
+  sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY, {
+    auth: { persistSession: true, autoRefreshToken: true, detectSessionInUrl: true }
+  });
+
+  // Restore an existing session on page refresh. Auth state listener handles logout.
+  sb.auth.onAuthStateChange((event) => {
+    if (event === 'SIGNED_OUT') {
+      allProperties = [];
+      photoCache.clear();
+      show('loginView');
+    }
+  });
+
+  const { data, error } = await sb.auth.getSession();
+  if (error) {
+    setLoginMessage(error.message || 'Could not restore your login session.');
+    show('loginView');
+    return;
+  }
+  if (data?.session) await startDashboard();
+  else show('loginView');
+}
+
+initialise().catch(error => {
+  console.error('Admin initialisation failed:', error);
+  show('loginView');
+  setLoginMessage(error?.message || 'Could not start the admin dashboard.');
+});
+</script>
+</body>
+</html>
