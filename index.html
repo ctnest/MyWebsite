@@ -403,8 +403,8 @@ const sample = [
   {id:"s7",title:"Running Grocery Shop for Sale",category:"Business & Shop",purpose:"Sale",price:"Rs. 12 Lakh",location:"Bharatpur",beds:0,baths:0,area:"Shop business",img:"https://images.unsplash.com/photo-1604719312566-8912e9c8a213?auto=format&fit=crop&w=900&q=80",desc:"Sample business listing for preview only. Buyers should independently verify business registration, lease terms, assets, liabilities and sales records.",photos:["https://images.unsplash.com/photo-1604719312566-8912e9c8a213?auto=format&fit=crop&w=1200&q=85"],isSample:true}
 ];
 
-/* Demo listings are hidden. Set to true to show them when there are no approved listings. */
-const SHOW_SAMPLE_LISTINGS = false;
+/* Demo listings are shown only when there are no approved listings. Set to false to hide them. */
+const SHOW_SAMPLE_LISTINGS = true;
 const demo = SHOW_SAMPLE_LISTINGS ? sample : [];
 
 let allListings = demo.slice();
