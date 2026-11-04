@@ -6,6 +6,9 @@
 <meta name="theme-color" content="#10251f">
 <title>CT Nest</title>
 <meta name="description" content="Find rooms, homes, land and commercial properties in Chitwan with CT Nest.">
+<link rel="icon" type="image/png" sizes="32x32" href="favicon-32.png">
+<link rel="icon" type="image/png" sizes="512x512" href="favicon.png">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
 <style>
 :root{--green:#176b4b;--green2:#0f5138;--ink:#17231e;--muted:#68766f;--cream:#f6f8f5;--line:#e5ebe6;--gold:#e9b95c;--white:#fff;--shadow:0 12px 35px rgba(18,49,35,.09)}
 *{box-sizing:border-box}
@@ -18,6 +21,9 @@ button{cursor:pointer}
 .nav{height:76px;display:flex;align-items:center;justify-content:space-between;gap:20px}
 .brand{display:flex;align-items:center;gap:10px;text-decoration:none;color:var(--ink);font-weight:900;font-size:25px;letter-spacing:-1px}
 .brandmark{width:39px;height:39px;border-radius:12px;background:var(--green);display:grid;place-items:center;color:#fff;font-size:22px}
+.brandlogo{display:block;height:62px;width:auto;max-width:100%;flex-shrink:0}
+.footer .brand{display:inline-flex;background:#fff;border-radius:14px;padding:8px 14px}
+.footer .brandlogo{height:104px}
 .navlinks{display:flex;align-items:center;gap:23px}
 .navlinks a{font-size:14px;font-weight:650;color:#34443b;text-decoration:none;white-space:nowrap}
 .navlinks a:hover{color:var(--green)}
@@ -132,6 +138,7 @@ button{cursor:pointer}
 .navlinks{display:none}
 .hamb{display:grid}
 .nav{height:66px}
+.brandlogo{height:52px}
 .searchbox{grid-template-columns:1fr 1fr}
 .searchfield:nth-child(2){border-right:0}
 .searchbox .btn{grid-column:1/-1}
@@ -147,6 +154,8 @@ button{cursor:pointer}
 .navright{gap:6px}
 .brand{font-size:22px}
 .brandmark{width:34px;height:34px}
+.brandlogo{height:46px}
+.footer .brandlogo{height:88px}
 .hero{padding:48px 0}
 .hero p{font-size:15px}
 .searchbox{grid-template-columns:1fr}
@@ -180,7 +189,7 @@ button{cursor:pointer}
 <body>
 <header class="header">
   <div class="wrap nav">
-    <a class="brand" href="#home"><span class="brandmark">⌂</span><span>CT NEST</span></a>
+    <a class="brand" href="#home" aria-label="CT Nest home"><img class="brandlogo" src="ctnest-logo-trimmed.jpg" alt="CT Nest - Find, Rent, Buy, Sell" width="556" height="629"></a>
     <nav class="navlinks">
       <a href="#home">Home</a>
       <a href="#properties" onclick="filterType('Rent')">Rent</a>
@@ -320,7 +329,7 @@ button{cursor:pointer}
   <div class="wrap">
     <div class="footgrid">
       <div>
-        <a class="brand" href="#home"><span class="brandmark">⌂</span><span>CT NEST</span></a>
+        <a class="brand" href="#home" aria-label="CT Nest home"><img class="brandlogo" src="ctnest-logo-trimmed.jpg" alt="CT Nest - Find, Rent, Buy, Sell" width="556" height="629" loading="lazy"></a>
         <p>CT Nest is a property discovery platform starting in Chitwan, Nepal. We aim to connect property seekers with property owners through clear information and a simple experience.</p>
         <div class="social"><a href="#" aria-label="Facebook">f</a><a href="#" aria-label="Instagram">◎</a><a href="#" aria-label="YouTube">▶</a></div>
       </div>
