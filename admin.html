@@ -1,0 +1,274 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="robots" content="noindex,nofollow">
+<meta name="theme-color" content="#0b2f4a">
+<title>CT Nest Admin</title>
+<link rel="icon" type="image/png" sizes="32x32" href="favicon-32.png">
+<link rel="icon" type="image/png" sizes="512x512" href="favicon.png">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<style>
+:root{--green:#12776d;--green2:#0b5f57;--navy:#0b2f4a;--ink:#14242e;--muted:#66767f;--cream:#f4f8f9;--line:#e3eaee;--red:#c0392b;--amber:#b7791f;--shadow:0 12px 35px rgba(10,48,74,.10)}
+*{box-sizing:border-box}
+body{margin:0;font-family:Inter,system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;color:var(--ink);background:var(--cream)}
+button,input{font:inherit}
+button{cursor:pointer}
+.wrap{width:min(1100px,92%);margin:auto}
+.top{background:#fff;border-bottom:1px solid var(--line);position:sticky;top:0;z-index:10}
+.topin{display:flex;align-items:center;justify-content:space-between;gap:12px;min-height:66px}
+.brand{display:flex;align-items:center;gap:12px;font-weight:800}
+.brand img{height:48px;width:auto;display:block}
+.badge{background:var(--navy);color:#fff;border-radius:8px;padding:4px 9px;font-size:11px;letter-spacing:1px;text-transform:uppercase}
+.btn{border:0;border-radius:10px;padding:10px 16px;background:var(--green);color:#fff;font-weight:750}
+.btn:hover{background:var(--green2)}
+.btn:disabled{opacity:.55;cursor:not-allowed}
+.btn.ghost{background:#fff;color:var(--ink);border:1px solid var(--line)}
+.btn.ghost:hover{background:var(--cream)}
+.btn.danger{background:var(--red)}
+.btn.danger:hover{background:#992d22}
+.card{background:#fff;border:1px solid var(--line);border-radius:16px;padding:20px}
+.login{max-width:400px;margin:60px auto}
+.login h1{margin:0 0 6px;font-size:24px}
+.login p{margin:0 0 18px;color:var(--muted);font-size:14px}
+.field{margin-bottom:12px}
+.field label{display:block;font-size:12px;font-weight:800;margin-bottom:6px}
+.field input{width:100%;border:1px solid #dce5de;border-radius:10px;padding:12px;outline-color:var(--green)}
+.msg{font-size:13px;margin-top:12px;color:var(--red);min-height:18px}
+.tabs{display:flex;gap:8px;flex-wrap:wrap;margin:22px 0 16px}
+.tab{border:1px solid var(--line);background:#fff;color:#536158;border-radius:30px;padding:9px 16px;font-size:13px;font-weight:700}
+.tab.active{background:var(--green);color:#fff;border-color:var(--green)}
+.list{display:grid;gap:16px;padding-bottom:50px}
+.item{display:grid;grid-template-columns:260px 1fr;gap:18px;background:#fff;border:1px solid var(--line);border-radius:16px;padding:16px}
+.photos .main{width:100%;height:190px;object-fit:cover;border-radius:12px;background:#e8eee9;display:block}
+.thumbs{display:flex;gap:6px;margin-top:8px;overflow:auto}
+.thumbs img{width:52px;height:44px;object-fit:cover;border-radius:6px;cursor:pointer;border:2px solid transparent;flex:none}
+.thumbs img.on{border-color:var(--green)}
+.nophoto{height:190px;border-radius:12px;background:#e8eee9;display:grid;place-items:center;color:var(--muted);font-size:13px}
+.info h3{margin:0 0 6px;font-size:18px}
+.chips{display:flex;gap:6px;flex-wrap:wrap;margin:8px 0}
+.chip{background:var(--cream);border:1px solid var(--line);border-radius:20px;padding:4px 10px;font-size:12px;font-weight:650;color:#3d4d57}
+.price{font-weight:900;color:var(--green);font-size:18px}
+.desc{font-size:13px;line-height:1.6;color:#44545e;margin:8px 0;white-space:pre-wrap;word-break:break-word}
+.meta{font-size:12px;color:var(--muted);line-height:1.7}
+.meta a{color:var(--green);font-weight:700}
+.actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px}
+.empty{text-align:center;color:var(--muted);padding:50px 10px}
+.toast{position:fixed;bottom:22px;left:50%;transform:translateX(-50%);background:var(--navy);color:#fff;padding:12px 18px;border-radius:10px;font-size:13px;display:none;z-index:50;max-width:92%;text-align:center}
+.toast.show{display:block}
+.hide{display:none!important}
+@media(max-width:700px){
+.item{grid-template-columns:1fr}
+.photos .main,.nophoto{height:220px}
+.brand img{height:42px}
+.topin{min-height:60px}
+}
+</style>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+</head>
+<body>
+
+<header class="top">
+  <div class="wrap topin">
+    <div class="brand"><img src="ctnest-logo-trimmed.jpg" alt="CT Nest" width="556" height="629"><span class="badge">Admin</span></div>
+    <button class="btn ghost hide" id="logoutBtn" onclick="logout()">Logout</button>
+  </div>
+</header>
+
+<main class="wrap">
+  <!-- Login -->
+  <section class="card login" id="loginView">
+    <h1>Admin login</h1>
+    <p>Sign in with the CT Nest admin account to review property listings.</p>
+    <form onsubmit="login(event)">
+      <div class="field"><label>Email</label><input type="email" id="email" required autocomplete="username"></div>
+      <div class="field"><label>Password</label><input type="password" id="password" required autocomplete="current-password"></div>
+      <button class="btn" type="submit" id="loginBtn" style="width:100%;margin-top:6px">Login</button>
+      <div class="msg" id="loginMsg"></div>
+    </form>
+  </section>
+
+  <!-- Denied -->
+  <section class="card login hide" id="deniedView">
+    <h1>Not authorised</h1>
+    <p id="deniedText">This account is not an admin.</p>
+    <button class="btn" onclick="logout()" style="width:100%">Logout</button>
+  </section>
+
+  <!-- Dashboard -->
+  <section class="hide" id="dashView">
+    <div class="tabs" id="tabs"></div>
+    <div class="list" id="list"></div>
+  </section>
+</main>
+<div class="toast" id="toast"></div>
+
+<script>
+/* Same Supabase project as the main website. The publishable key is safe to be public;
+   real protection comes from the database policies (see the admin SQL). */
+const SUPABASE_URL = "https://hshkkiujxfnhpkhdxbuw.supabase.co";
+const SUPABASE_KEY = "sb_publishable_UjNy4Jw4zay2FIJG7cR7hQ_dR47uK5r";
+const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+const TABS = [
+  { key: 'pending',  label: 'Pending' },
+  { key: 'approved', label: 'Approved' },
+  { key: 'rejected', label: 'Rejected' }
+];
+let all = [];
+let tab = 'pending';
+const photoCache = {};
+
+function esc(v){
+  return String(v ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+}
+function $(id){ return document.getElementById(id); }
+function toast(msg){
+  const t = $('toast'); t.textContent = msg; t.classList.add('show');
+  clearTimeout(toast._t); toast._t = setTimeout(() => t.classList.remove('show'), 3500);
+}
+function show(view){
+  ['loginView','deniedView','dashView'].forEach(v => $(v).classList.toggle('hide', v !== view));
+  $('logoutBtn').classList.toggle('hide', view === 'loginView');
+}
+
+/* ---------- Auth ---------- */
+async function login(e){
+  e.preventDefault();
+  const btn = $('loginBtn'); btn.disabled = true; $('loginMsg').textContent = '';
+  try {
+    const { error } = await sb.auth.signInWithPassword({ email: $('email').value.trim(), password: $('password').value });
+    if (error){ $('loginMsg').textContent = error.message; return; }
+    await start();
+  } catch (err) {
+    $('loginMsg').textContent = err.message || 'Login failed.';
+  } finally { btn.disabled = false; }
+}
+async function logout(){
+  await sb.auth.signOut();
+  all = []; show('loginView');
+}
+async function start(){
+  const { data: { user } } = await sb.auth.getUser();
+  if (!user){ show('loginView'); return; }
+  const { data, error } = await sb.from('admins').select('user_id').eq('user_id', user.id).maybeSingle();
+  if (error || !data){
+    $('deniedText').textContent = 'Signed in as ' + user.email + ', but this account is not an admin.' +
+      (error ? ' (' + error.message + ')' : '');
+    show('deniedView');
+    return;
+  }
+  show('dashView');
+  await load();
+}
+
+/* ---------- Data ---------- */
+async function load(){
+  $('list').innerHTML = '<div class="empty">Loading…</div>';
+  const { data, error } = await sb.from('properties').select('*').order('created_at', { ascending: false });
+  if (error){ $('list').innerHTML = '<div class="empty">Could not load: ' + esc(error.message) + '</div>'; return; }
+  all = data || [];
+  render();
+}
+async function photosFor(p){
+  if (photoCache[p.id]) return photoCache[p.id];
+  const urls = await Promise.all((p.photo_urls || []).map(async path => {
+    const { data, error } = await sb.storage.from('property-photos').createSignedUrl(path, 3600);
+    return (error || !data) ? null : data.signedUrl;
+  }));
+  return (photoCache[p.id] = urls.filter(Boolean));
+}
+
+/* ---------- Render ---------- */
+function render(){
+  $('tabs').innerHTML = TABS.map(t => {
+    const n = all.filter(x => (x.status || 'pending') === t.key).length;
+    return `<button class="tab ${t.key === tab ? 'active' : ''}" onclick="setTab('${t.key}')">${t.label} (${n})</button>`;
+  }).join('') + `<button class="tab" onclick="load()" aria-label="Refresh">↻ Refresh</button>`;
+
+  const rows = all.filter(x => (x.status || 'pending') === tab);
+  if (!rows.length){ $('list').innerHTML = `<div class="empty">No ${esc(tab)} properties.</div>`; return; }
+
+  $('list').innerHTML = rows.map(p => {
+    const id = esc(p.id);
+    const when = p.created_at ? new Date(p.created_at).toLocaleString() : '';
+    const phone = String(p.whatsapp_number || '').replace(/\D/g, '');
+    const fac = (p.facilities || []).map(f => `<span class="chip">${esc(f)}</span>`).join('');
+    let buttons = '';
+    if (tab === 'pending'){
+      buttons = `<button class="btn" onclick="setStatus('${id}','approved',this)">✓ Approve</button>
+                 <button class="btn danger" onclick="setStatus('${id}','rejected',this)">✕ Reject</button>`;
+    } else if (tab === 'approved'){
+      buttons = `<button class="btn ghost" onclick="setStatus('${id}','pending',this)">Move back to pending</button>
+                 <button class="btn danger" onclick="setStatus('${id}','rejected',this)">✕ Reject</button>`;
+    } else {
+      buttons = `<button class="btn" onclick="setStatus('${id}','approved',this)">✓ Approve</button>
+                 <button class="btn ghost" onclick="setStatus('${id}','pending',this)">Move back to pending</button>`;
+    }
+    return `
+    <article class="item" id="item-${id}">
+      <div class="photos" id="photos-${id}"><div class="nophoto">Loading photos…</div></div>
+      <div class="info">
+        <h3>${esc(p.title)}</h3>
+        <div class="price">Rs. ${esc(Number(p.price || 0).toLocaleString('en-IN'))}${p.purpose === 'Rent' ? ' / month' : ''}</div>
+        <div class="chips">
+          <span class="chip">${esc(p.property_type)}</span>
+          <span class="chip">For ${esc(p.purpose)}</span>
+          <span class="chip">⌖ ${esc(p.location)}</span>
+          ${p.bedrooms != null ? `<span class="chip">${esc(p.bedrooms)} bed</span>` : ''}
+          ${p.bathrooms != null ? `<span class="chip">${esc(p.bathrooms)} bath</span>` : ''}
+        </div>
+        ${p.address ? `<div class="meta">Address: ${esc(p.address)}</div>` : ''}
+        <div class="desc">${esc(p.description)}</div>
+        ${fac ? `<div class="chips">${fac}</div>` : ''}
+        <div class="meta">
+          WhatsApp: ${phone ? `<a href="https://wa.me/${esc(phone)}" target="_blank" rel="noopener">${esc(p.whatsapp_number)}</a>` : 'not given'}<br>
+          Submitted: ${esc(when)}
+        </div>
+        <div class="actions">${buttons}</div>
+      </div>
+    </article>`;
+  }).join('');
+
+  rows.forEach(async p => {
+    const urls = await photosFor(p);
+    const box = $('photos-' + p.id);
+    if (!box) return;
+    if (!urls.length){ box.innerHTML = '<div class="nophoto">No photos</div>'; return; }
+    box.innerHTML = `<a href="${esc(urls[0])}" target="_blank" rel="noopener" id="mainlink-${esc(p.id)}"><img class="main" id="main-${esc(p.id)}" src="${esc(urls[0])}" alt="Property photo"></a>
+      <div class="thumbs">${urls.map((u, i) => `<img src="${esc(u)}" class="${i === 0 ? 'on' : ''}" data-pid="${esc(p.id)}" alt="Photo ${i + 1}">`).join('')}</div>`;
+    box.querySelectorAll('.thumbs img').forEach(img => img.addEventListener('click', () => {
+      $('main-' + p.id).src = img.src; $('mainlink-' + p.id).href = img.src;
+      box.querySelectorAll('.thumbs img').forEach(x => x.classList.remove('on')); img.classList.add('on');
+    }));
+  });
+}
+function setTab(k){ tab = k; render(); }
+
+/* ---------- Actions ---------- */
+async function setStatus(id, status, btn){
+  const p = all.find(x => String(x.id) === String(id));
+  if (!p) return;
+  if (status === 'rejected' && !confirm('Reject "' + p.title + '"?')) return;
+  btn.disabled = true;
+  try {
+    // .select() returns the changed rows, so we can tell if the database silently refused the update.
+    const { data, error } = await sb.from('properties').update({ status }).eq('id', p.id).select('id,status');
+    if (error) throw error;
+    if (!data || !data.length) throw new Error('Not allowed. Run the admin SQL in Supabase first.');
+    p.status = status;
+    toast(status === 'approved' ? 'Approved. It is now public.' : status === 'rejected' ? 'Rejected.' : 'Moved back to pending.');
+    render();
+  } catch (err) {
+    console.error(err);
+    toast(err.message || 'Could not update.');
+    btn.disabled = false;
+  }
+}
+
+sb.auth.onAuthStateChange((evt) => { if (evt === 'SIGNED_OUT') show('loginView'); });
+start();
+</script>
+</body>
+</html>
