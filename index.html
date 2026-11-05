@@ -213,7 +213,7 @@ button{cursor:pointer}
       <a href="#contact">Contact</a>
     </nav>
     <div class="navright">
-      <button class="iconbtn" onclick="openModal('account')" aria-label="My account">♙</button>
+      <button class="iconbtn" onclick="openAccount()" aria-label="My account">♙</button>
       <button class="btn" onclick="openPost()">＋ Post Property</button>
       <button class="iconbtn hamb" onclick="toggleMenu()" aria-label="Open menu">☰</button>
     </div>
@@ -410,6 +410,8 @@ const demo = SHOW_SAMPLE_LISTINGS ? sample : [];
 let allListings = demo.slice();
 let current = demo.slice();
 let saved = new Set();
+try { saved = new Set(JSON.parse(localStorage.getItem('ctnest_saved') || '[]')); } catch(e) {}
+function persistSaved(){ try { localStorage.setItem('ctnest_saved', JSON.stringify([...saved])); } catch(e) {} }
 let activeCategory = "All";
 let activePurpose = "All";
 let detailPhotos = [];
@@ -424,6 +426,14 @@ function toast(msg){
   t.classList.add('show');
   clearTimeout(toast._t);
   toast._t = setTimeout(() => t.classList.remove('show'), 3000);
+}
+function toWhatsAppNumber(raw){
+  let d = String(raw || '').replace(/\D/g, '');
+  if (!d) return '';
+  if (d.startsWith('00')) d = d.slice(2);
+  if (d.startsWith('977')) return d;
+  d = d.replace(/^0+/, '');
+  return '977' + d;
 }
 function toggleMenu(){ document.getElementById('mobilemenu').classList.toggle('show'); }
 
@@ -446,11 +456,11 @@ async function loadProperties(){
 
     allListings = await Promise.all(data.map(async p => {
       const paths = p.photo_urls || [];
-      const signed = await Promise.all(paths.map(async path => {
-        const { data: ph, error: phErr } = await sb.storage.from('property-photos').createSignedUrl(path, 3600);
-        return (phErr || !ph) ? null : ph.signedUrl;
-      }));
-      const photos = signed.filter(Boolean);
+      let photos = [];
+      if (paths.length){
+        const { data: signed, error: signErr } = await sb.storage.from('property-photos').createSignedUrls(paths, 86400);
+        if (!signErr && signed) photos = signed.map(x => x.signedUrl).filter(Boolean);
+      }
       const img = photos[0] || 'https://placehold.co/600x400?text=CT+Nest';
       return {
         id: p.id,
@@ -569,6 +579,7 @@ function clearFilters(){
 function toggleSave(id, btn){
   id = String(id);
   if (saved.has(id)) saved.delete(id); else saved.add(id);
+  persistSaved();
   btn.classList.toggle('saved', saved.has(id));
   btn.textContent = saved.has(id) ? '♥' : '♡';
   toast(saved.has(id) ? 'Added to saved properties' : 'Removed from saved properties');
@@ -580,8 +591,8 @@ function openDetails(id){
   if (!p){ toast('Property details not found.'); return; }
   detailPhotos = (p.photos && p.photos.length) ? p.photos : [p.img];
   const facilities = p.facilities || [];
-  const phone = (p.whatsapp_number || '').replace(/\D/g, '');
-  const waLink = phone ? `https://wa.me/${phone}` : '';
+  const phone = toWhatsAppNumber(p.whatsapp_number);
+  const waLink = phone ? `https://wa.me/${phone}?text=${encodeURIComponent('Hello, I saw your property "' + p.title + '" on CT Nest.')}` : '';
   document.getElementById('modalBox').classList.add('wide');
   document.getElementById('modalContent').innerHTML = `
     <h2>${esc(p.title)}</h2>
@@ -613,6 +624,11 @@ function changePhoto(i, el){
 /* ---------- Modals ---------- */
 function openOverlay(){ document.getElementById('modalOverlay').classList.add('show'); }
 function closeModal(){ document.getElementById('modalOverlay').classList.remove('show'); }
+
+async function openAccount(){
+  const { data: { user } } = await sb.auth.getUser();
+  openModal(user ? 'settings' : 'account');
+}
 
 async function openPost(){
   const { data: { user } } = await sb.auth.getUser();
@@ -790,7 +806,30 @@ async function logout(){
 }
 
 /* ---------- Post property ---------- */
+function compressImage(file, maxSide = 1600, quality = 0.82){
+  return new Promise(resolve => {
+    if (!file.type.startsWith('image/') || file.type === 'image/gif') return resolve(file);
+    const url = URL.createObjectURL(file);
+    const img = new Image();
+    img.onload = () => {
+      URL.revokeObjectURL(url);
+      const scale = Math.min(1, maxSide / Math.max(img.width, img.height));
+      const c = document.createElement('canvas');
+      c.width = Math.round(img.width * scale);
+      c.height = Math.round(img.height * scale);
+      c.getContext('2d').drawImage(img, 0, 0, c.width, c.height);
+      c.toBlob(blob => {
+        if (!blob || blob.size >= file.size) return resolve(file);
+        resolve(new File([blob], file.name.replace(/\.[^.]+$/, '') + '.jpg', { type: 'image/jpeg' }));
+      }, 'image/jpeg', quality);
+    };
+    img.onerror = () => { URL.revokeObjectURL(url); resolve(file); };
+    img.src = url;
+  });
+}
+
 function previewPhotos(e){
+  if (e.target.files.length > 6) toast('Maximum 6 photos allowed. Please select 6 or fewer.');
   const files = [...e.target.files].slice(0, 6);
   document.getElementById('photoPreview').innerHTML = files.map(f => `<img src="${URL.createObjectURL(f)}" alt="Selected photo">`).join('');
 }
@@ -815,12 +854,17 @@ async function submitProperty(e){
     }
     const photoPaths = [];
     for (let i = 0; i < files.length; i++){
-      const file = files[i];
+      const file = await compressImage(files[i]);
       const safeName = file.name.replace(/[^a-zA-Z0-9._-]/g, '_');
       const filePath = `${user.id}/${Date.now()}-${i}-${safeName}`;
-      const { error: upErr } = await sb.storage.from('property-photos').upload(filePath, file);
+      const { error: upErr } = await sb.storage.from('property-photos').upload(filePath, file, { contentType: file.type });
       if (upErr) throw upErr;
       photoPaths.push(filePath);
+    }
+    const waNum = toWhatsAppNumber(form.elements.namedItem('whatsapp_number').value);
+    if (waNum.length < 12 || waNum.length > 13){
+      toast('Please enter a valid WhatsApp number, e.g. 98XXXXXXXX.');
+      return;
     }
     const facilities = Array.from(form.querySelectorAll('input[name="facilities"]:checked')).map(i => i.value);
     const val = name => (form.elements.namedItem(name)?.value || '').trim();
@@ -834,7 +878,7 @@ async function submitProperty(e){
       bedrooms: val('bedrooms') === '' ? null : Number(val('bedrooms')),
       bathrooms: val('bathrooms') === '' ? null : Number(val('bathrooms')),
       description: val('description'),
-      whatsapp_number: val('whatsapp_number'),
+      whatsapp_number: waNum,
       photo_urls: photoPaths,
       facilities: facilities,
       user_id: user.id,
