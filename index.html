@@ -146,6 +146,10 @@ button{cursor:pointer}
 .checks{display:flex;gap:8px;flex-wrap:wrap}
 .checks label{display:flex;align-items:center;gap:6px;font-weight:600;border:1px solid var(--line);border-radius:30px;padding:7px 12px;margin:0;cursor:pointer}
 .checks input{width:auto}
+.phonebox{display:flex;align-items:stretch;border:1px solid #dce5de;border-radius:10px;overflow:hidden}
+.phonebox:focus-within{outline:2px solid var(--green)}
+.phonebox .cc{background:#f0f4f1;padding:0 12px;display:flex;align-items:center;font-weight:700;font-size:14px;white-space:nowrap;border-right:1px solid #dce5de}
+.phonebox input{border:0!important;border-radius:0!important;outline:0!important;flex:1;min-width:0}
 @media(max-width:850px){
 .categories{grid-template-columns:repeat(2,1fr)}
 .navlinks{display:none}
@@ -689,7 +693,9 @@ function openModal(type){
               <small style="color:#68766f">Select up to 6 photos.</small>
             </div></div>
           <div class="field full"><label>Description *</label><textarea name="description" required placeholder="Describe the property and important details..."></textarea></div>
-          <div class="field full"><label>WhatsApp number *</label><input name="whatsapp_number" required type="tel" placeholder="98XXXXXXXX"></div>
+          <div class="field full"><label>WhatsApp number *</label>
+            <div class="phonebox"><span class="cc">🇳🇵 +977</span><input name="whatsapp_number" required type="tel" inputmode="numeric" maxlength="10" pattern="9[78][0-9]{8}" placeholder="98XXXXXXXX" title="10-digit Nepal mobile number, e.g. 9841234567"></div>
+            <small style="color:#68766f">Enter 10-digit number only. +977 is added automatically.</small></div>
         </div>
         <div class="notice">Your property will be submitted for approval before appearing publicly.</div>
         <button class="btn" type="submit" style="width:100%;margin-top:15px">Submit Property</button>
